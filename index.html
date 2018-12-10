@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Lab 6</title>
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+        integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+        crossorigin=""/>
+        <link href='https://fonts.googleapis.com/css?family=Acme' rel='stylesheet'>
+
+        <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+        integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+        crossorigin=""></script>
+
+        <!-- Load animation tweening library requirement for CanvasFlowMapLayer -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.6.0/Tween.min.js"></script>
+
+        <!-- then load CanvasFlowMapLayer -->
+        <script src="CanvasFlowmapLayer.js"></script>
+
+        <script type="text/javascript" src="data.js"></script>
+
+        <style type="text/css">
+          html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            }
+
+          #map {
+            min-height: 100%;
+            }
+
+          .title {
+              padding: 6px 8px;
+              font-family: 'Arial';font-size: 22px;
+              background: white;
+              background: rgba(255,255,255,0.8);
+              box-shadow: 0 0 15px rgba(0,0,0,0.2);
+              border-radius: 5px;
+          }
+
+        </style>
+
+    </head>
+
+    <body>
+        <div id="map"></div>
+
+        <script type="text/javascript">
+
+          var map = L.map('map', {
+              center: [25, 0],
+              zoom: 3
+          });
+
+          var canvas = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    attribution: 'Map data © OpenStreetMap contributors, CC-BY-SA, Imagery © Mapbox',
+    id: 'mapbox.light',
+    accessToken:'pk.eyJ1IjoiY3VyZW1hbmdvIiwiYSI6ImNpcTQ4cGFwbDAxbmVmd25vZGNiOTVzeGEifQ.GWZByYkIft6eMRha69C8nw'
+  }).addTo(map);
+
+          L.canvasFlowmapLayer( imps, { //data is the variable name I used for defining the cook.js data
+              originAndDestinationFieldIds: {
+                originUniqueIdField: 'State_B',  //origin ID, use GEOID_B if you want to reverse the flow
+                originGeometry: { //origin coordinates
+                  x: 'exp_LON',
+                  y: 'exp_LAT'
+                },
+                destinationUniqueIdField: 'State_A', //destination ID
+                destinationGeometry: { //destination coordinates
+                  x: 'imp_LON',
+                  y: 'imp_LAT'
+                }
+              },
+
+              canvasBezierStyle: {
+              //This example demonstrates the use of graduated symbols (class breaks) for the flowlines
+              //Other options: https://developers.arcgis.com/documentation/common-data-types/renderer-objects.htm
+                type: 'classBreaks',
+                field: 'Imports', // This is the field I intended to use for symbolizing the lines
+
+                // Define the classes and symbols below
+                classBreakInfos: [{
+                  classMinValue: 10,  // break values of the class
+                  classMaxValue: 20,
+                  symbol: {  // Define the symbology for this class
+                             // See an example from the documentation: https://github.com/jwasilgeo/Leaflet.Canvas-Flowmap-Layer/blob/master/docs/class-breaks-symbology/index.html#L94-L137
+                    strokeStyle: '#B03A2E',  // flow line color
+                    lineWidth: 14,  // flow line width
+                    lineCap: 'round',  // shape of the stroke end
+                  }
+                }, {  // another class
+                  classMinValue: 5,
+                  classMaxValue: 9.9999,
+                  symbol: {
+                    strokeStyle: '#F39C12',
+                    lineWidth: 8,
+                    lineCap: 'round',
+                  }
+                }, {  // one more class
+                  classMinValue: 2,
+                  classMaxValue: 4.999,
+                  symbol: {
+                    strokeStyle: '#F4D03F',
+                    lineWidth: 5,
+                    lineCap: 'round',
+                  }
+                }, {  // more classes if needed
+                    classMinValue: 0,
+                    classMaxValue: 1.999,
+                    symbol: {
+                      strokeStyle: '#ABEBC6',
+                      lineWidth: 2,
+                      lineCap: 'round',
+                    }
+                }],
+              },
+              // Options to customize the flow map, check out the link below
+              // https://github.com/jwasilgeo/Leaflet.Canvas-Flowmap-Layer#options-and-property-summary
+              pathDisplayMode: 'all',
+              animationStarted: true,
+              animationEasingFamily: 'Cubic',
+              animationEasingType: 'In',
+              animationDuration: 2000
+            }).addTo(map);
+
+
+
+var marker1 = L.marker([0,-0]).addTo(map);
+
+var pic1 = '<img src="https://i.imgur.com/ncj0ssU.png" alt="imports" width="500">';
+marker1.bindPopup('<p style="color:black; font-weight:bold"> Top Wood Importing Countries </p>' + pic1);
+
+
+            var title = L.control({position: 'topright'}); // position of the title
+
+            title.onAdd = function (map) {
+                this._div = L.DomUtil.create('div', 'title'); // create a div with a class "title"
+                this._div.innerHTML = "<h4>Worldwide top wood imports in billions usd</h4>";  // Title Text
+                return this._div;
+            };
+
+            title.addTo(map);
+
+        </script>
+   </body>
+</html>
